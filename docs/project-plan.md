@@ -1,5 +1,7 @@
 # LLM Gateway and Shadow Evaluation Platform Project Plan
 
+Implementation breakdown: [M2 subphase plan and completion gates](m2-plan.md), including [unfinished M1 technical spike evidence](spikes/m1-carryover.md).
+
 **Project type:** Individual portfolio project  
 **Target level:** Level 3 strong portfolio and production-oriented design  
 **Deployment boundary:** Local and single-host Docker Compose only; no Kubernetes  

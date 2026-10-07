@@ -1,6 +1,6 @@
 # Architecture
 
-The implementation is currently a foundation scaffold. The planned system and its invariants are specified in [the project plan](project-plan.md), sections 6–9.
+The M2 implementation serves stable requests through an authenticated FastAPI endpoint, an async provider interface, and fake, OpenAI or Groq adapters. The planned full system and its invariants are specified in [the project plan](project-plan.md), sections 6–9.
 
 ## Planned flow
 
@@ -32,4 +32,6 @@ The serving request waits only for its selected provider. Shadow work is sampled
 | `app/telemetry` | Metrics and tracing helpers |
 | `worker` | Queue admission, consumers, evaluation orchestration |
 
-The current process exposes only `/health/live` and `/metrics`. The queue, database models, and provider calls are planned work.
+The current process exposes `/v1/chat/completions`, `/health/live`, `/health/ready` and `/metrics/`. It validates configuration at startup, owns one HTTP client through lifespan, bounds serving slots, and invokes one provider within a total deadline. The request boundary counts actual bytes, generates request IDs and emits allowlisted JSON logs. OpenAI normalization stays inside its adapter; the fake provider needs no network.
+
+Database-backed records/configuration, rollout routing, production shadow consumers and evaluation remain planned work. M2's isolated queue and trace experiments provide feasibility evidence only. See [ADR 002](adr/002-stable-api-and-providers.md) and [the M2 status checklist](m2-plan.md).

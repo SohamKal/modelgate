@@ -1,0 +1,14 @@
+{
+  "content": "fake:b219269c05a8",
+  "model": "fake-v1",
+  "usage": {
+    "input_tokens": 3,
+    "output_tokens": 1,
+    "total_tokens": 4
+  },
+  "finish_reason": "stop",
+  "request_id": "5d117034-d077-4ef4-bf4e-c046e24ef807",
+  "release_name": "fake",
+  "serving_role": "stable",
+  "config_version": null
+}
