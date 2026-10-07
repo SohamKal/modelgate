@@ -7,6 +7,22 @@ on:
 jobs:
   checks:
     runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16.6-alpine
+        env:
+          POSTGRES_USER: modelgate
+          POSTGRES_PASSWORD: test-only # pragma: allowlist secret (public disposable fixture)
+          POSTGRES_DB: modelgate_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U modelgate -d modelgate_test"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 10
+    env:
+      TEST_DATABASE_URL: postgresql+asyncpg://modelgate:test-only@127.0.0.1:5432/modelgate_test # pragma: allowlist secret (public disposable fixture)
     steps:
       - uses: actions/checkout@v4
       - uses: astral-sh/setup-uv@v6
@@ -21,7 +37,14 @@ jobs:
       - name: Types
         run: uv run --no-sync mypy app worker scripts
       - name: Tests
-        run: uv run --no-sync pytest
+        run: uv run --no-sync pytest --require-postgres
+      - name: Migration round trip (disposable database only)
+        env:
+          DATABASE_URL: ${{ env.TEST_DATABASE_URL }}
+        run: |
+          uv run --no-sync alembic downgrade base
+          uv run --no-sync alembic upgrade head
+          uv run --no-sync alembic check
       - name: Secret scan
         run: uv run --no-sync pre-commit run detect-secrets --all-files
       - name: Dependency audit

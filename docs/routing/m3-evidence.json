@@ -1,0 +1,99 @@
+{
+  "gate": "M3-routing",
+  "status": "verified",
+  "verified_at": "2026-10-07T21:50:11.364481+00:00",
+  "source_revision": "feb202d",
+  "source_dirty": true,
+  "python_source_sha256": "8dd2:fa0f:7d1f:1a5f:d02c:fb70:e313:7760:a92c:21f3:82ee:9e1d:7c24:4258:63f7:ff49",
+  "migration": "a701c3d717e0",
+  "stable_release_id": "def97d1f-f564-4328-9c19-5d061be5926d",
+  "candidate_release_id": "c0592ce6-84a2-4db5-bf76-e41a6b31b3f8",
+  "real_provider_calls": 0,
+  "shadow_execution": "deferred_to_M4",
+  "results": [
+    {
+      "mode": "stable",
+      "percentage": 0,
+      "config_version": 2,
+      "allocation_corpus_size": 10000,
+      "selected_keys": 0,
+      "http_requests": 2,
+      "recorded_invocations": 2,
+      "candidate_serving_calls": 0,
+      "shadow_selected_execution_deferred": 0,
+      "status": "verified"
+    },
+    {
+      "mode": "canary",
+      "percentage": 0,
+      "config_version": 3,
+      "allocation_corpus_size": 10000,
+      "selected_keys": 0,
+      "http_requests": 2,
+      "recorded_invocations": 2,
+      "candidate_serving_calls": 0,
+      "shadow_selected_execution_deferred": 0,
+      "status": "verified"
+    },
+    {
+      "mode": "canary",
+      "percentage": 100,
+      "config_version": 4,
+      "allocation_corpus_size": 10000,
+      "selected_keys": 10000,
+      "http_requests": 2,
+      "recorded_invocations": 2,
+      "candidate_serving_calls": 2,
+      "shadow_selected_execution_deferred": 0,
+      "status": "verified"
+    },
+    {
+      "mode": "canary",
+      "percentage": 10,
+      "config_version": 5,
+      "allocation_corpus_size": 10000,
+      "selected_keys": 1023,
+      "http_requests": 32,
+      "recorded_invocations": 32,
+      "candidate_serving_calls": 6,
+      "shadow_selected_execution_deferred": 0,
+      "status": "verified"
+    },
+    {
+      "mode": "shadow",
+      "percentage": 0,
+      "config_version": 6,
+      "allocation_corpus_size": 10000,
+      "selected_keys": 0,
+      "http_requests": 2,
+      "recorded_invocations": 2,
+      "candidate_serving_calls": 0,
+      "shadow_selected_execution_deferred": 0,
+      "status": "verified"
+    },
+    {
+      "mode": "shadow",
+      "percentage": 100,
+      "config_version": 7,
+      "allocation_corpus_size": 10000,
+      "selected_keys": 10000,
+      "http_requests": 2,
+      "recorded_invocations": 2,
+      "candidate_serving_calls": 0,
+      "shadow_selected_execution_deferred": 2,
+      "status": "verified"
+    },
+    {
+      "mode": "shadow",
+      "percentage": 10,
+      "config_version": 8,
+      "allocation_corpus_size": 10000,
+      "selected_keys": 955,
+      "http_requests": 32,
+      "recorded_invocations": 32,
+      "candidate_serving_calls": 0,
+      "shadow_selected_execution_deferred": 2,
+      "status": "verified"
+    }
+  ]
+}

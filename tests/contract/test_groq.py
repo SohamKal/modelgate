@@ -164,6 +164,7 @@ async def test_gateway_selects_groq_and_keeps_public_contract(
     config = groq_settings(settings, "groq-b")
     app = create_app(
         config,
+        ephemeral=True,
         transport=httpx.MockTransport(
             lambda request: httpx.Response(
                 200, json=groq_response | {"model": "openai/gpt-oss-120b"}

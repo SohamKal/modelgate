@@ -2,7 +2,7 @@
 
 Modelgate is a planned provider-neutral LLM gateway for stable, canary, and shadow model releases. The full scope and milestones are in [the project plan](docs/project-plan.md).
 
-The **M2 stable gateway implementation** is available: an authenticated chat endpoint, deterministic offline provider, and OpenAI/Groq Responses adapters. All four M1 technical spikes have verification evidence. The live-model gate passed with two Groq models on October 7, 2026; remote CI and review remain. See [the M2 checklist](docs/m2-plan.md), [live evidence](docs/spikes/model-evidence.json), and [spike findings](docs/spikes/m1-carryover.md).
+The gateway now supports **M3 persistence and routing**: PostgreSQL configuration history, stable/canary serving and shadow sampling decisions. See [the M3 checklist](docs/m3-plan.md), [routing evidence](docs/routing/m3-evidence.json) and [architecture decisions](docs/adr/004-persistence-and-routing.md). M2's two Groq model checks and technical spikes remain recorded in [live evidence](docs/spikes/model-evidence.json) and [spike findings](docs/spikes/m1-carryover.md).
 
 ## Architecture at a glance
 
@@ -18,10 +18,13 @@ The planned gateway has one synchronous serving path and a bounded, in-process s
 ```bash
 cp .env.example .env
 uv sync --locked --group dev
+docker compose up -d postgres
+uv run python -m scripts.migrate
+uv run python -m scripts.seed_data
 uv run uvicorn app.main:app --reload --no-access-log
 ```
 
-The example environment selects the fake provider and includes a public localhost demonstration key. Open `http://127.0.0.1:8000/docs` and use **Authorize** with that key, or send:
+Copy the environment only for a new checkout; preserve an existing `.env`. The seed selects `fake-stable` without replacing an existing active version. The example environment includes public localhost demonstration gateway/hash keys. Open `http://127.0.0.1:8000/docs` and use **Authorize** with the gateway key, or send:
 
 ```bash
 curl http://127.0.0.1:8000/v1/chat/completions \
@@ -30,7 +33,7 @@ curl http://127.0.0.1:8000/v1/chat/completions \
   -d '{"messages":[{"role":"user","content":"Classify: I was charged twice."}],"max_output_tokens":200}'
 ```
 
-The response contains deterministic fake content, a generated request ID, `release_name=fake`, `serving_role=stable`, synthetic usage, and `config_version=null`. Liveness is `/health/live`; readiness is `/health/ready`; process metrics are `/metrics/`. To exercise an actual local HTTP request without configuring a running server:
+The response contains deterministic fake content, a generated request ID, `release_name=fake-stable`, `serving_role=stable`, synthetic usage, a durable `config_version` and `recording_status=recorded`. Readiness at `/health/ready` checks PostgreSQL, the active config and credentials without calling a real model. Liveness is `/health/live`; process metrics are `/metrics/`. To exercise an isolated adapter HTTP request without PostgreSQL:
 
 ```bash
 uv run python -m scripts.smoke_gateway
@@ -47,11 +50,11 @@ uv run python -m scripts.verify_models --provider groq --output docs/spikes/mode
 
 The check sends no requests. Verification sends one synthetic request per model through the gateway, capped at up to 512 output tokens for reasoning, and records metadata/usage without keys, output content or reasoning text. Each result must have completed nonempty text, the expected Groq model ID, release and serving role.
 
-`MODELGATE_VERIFICATION_PROVIDER=groq` selects the command's default; `--provider` overrides it. Default application serving remains `fake`. To serve ordinary Groq traffic, select `MODELGATE_STABLE_RELEASE=groq-a` or `groq-b` and restart/recreate the gateway. See [ADR 003](docs/adr/003-groq-live-verification.md) for provider differences.
+`MODELGATE_VERIFICATION_PROVIDER=groq` selects the command's default; `--provider` overrides it. This command tests adapters in an explicitly isolated configuration. Ordinary M3 serving uses registered database releases; see the configuration commands below. `MODELGATE_STABLE_RELEASE` no longer overrides PostgreSQL. See [ADR 003](docs/adr/003-groq-live-verification.md) for provider differences.
 
 ## Optional OpenAI configurations
 
-In your ignored `.env`, supply `OPENAI_API_KEY`, `OPENAI_MODEL_A`, and `OPENAI_MODEL_B` with two distinct accessible model IDs. Select `MODELGATE_STABLE_RELEASE=openai-a` or `openai-b`, then restart the gateway. The client's endpoint and request shape stay the same. Temperature is omitted when null; enable the matching capability setting only when that model supports it. OpenAI requests use `store=false` and make one attempt.
+For isolated verification, supply `OPENAI_API_KEY`, `OPENAI_MODEL_A`, and `OPENAI_MODEL_B` with two distinct accessible model IDs in your ignored `.env`. For ordinary serving, register and activate a database release with the configured OpenAI key. The client's endpoint and request shape stay the same. Temperature is omitted when null and there is no release default; enable temperature support only when that model supports it. OpenAI requests use `store=false` and make one attempt.
 
 Run the explicit live gate once you have configured both models:
 
@@ -77,7 +80,7 @@ docker compose up --build -d
 docker compose --profile observability up --build -d
 ```
 
-The core profile starts the gateway and PostgreSQL. PostgreSQL is reserved for M3; M2 does not read or write its records. The observability profile adds Prometheus (`localhost:9090`), Jaeger (`localhost:16686`), and Grafana (`localhost:3000`). Grafana's local credentials are set in `.env`. Full instrumentation and dashboard panels arrive in M6. Verify the carryover trace spike independently with:
+The core profile starts PostgreSQL and the gateway. Container startup applies migrations and the repeatable fake seed before starting Uvicorn. A seed never resets an existing active configuration. The observability profile adds Prometheus (`localhost:9090`), Jaeger (`localhost:16686`), and Grafana (`localhost:3000`). Grafana's local credentials are set in `.env`. Full instrumentation and dashboard panels arrive in M6. Verify the carryover trace spike independently with:
 
 ```bash
 docker compose --profile observability up -d jaeger otel-collector
@@ -95,6 +98,29 @@ uv run mypy app worker scripts
 uv run pytest
 uv run pre-commit run --all-files
 ```
+
+Required database verification uses an isolated PostgreSQL database ending in `_test`:
+
+```bash
+TEST_DATABASE_URL=postgresql+asyncpg://modelgate:test-only@127.0.0.1:55433/modelgate_test uv run pytest --require-postgres # pragma: allowlist secret (public disposable test credentials)
+DATABASE_URL=postgresql+asyncpg://modelgate:test-only@127.0.0.1:55433/modelgate_test uv run python -m scripts.verify_routing --output docs/routing/m3-evidence.json # pragma: allowlist secret (public disposable test credentials)
+```
+
+These commands require a test container described in [operations](docs/operations.md). The routing rehearsal changes that test database's active configuration and uses fake providers only. Its 10,000-key allocation checks are pure routing calculations; the bounded HTTP batch demonstrates gateway/database integration.
+
+## Configure routing locally
+
+```bash
+uv run python -m scripts.configure_routing releases
+uv run python -m scripts.configure_routing history
+uv run python -m scripts.configure_routing activate --mode canary --stable fake-stable --candidate fake-candidate --canary-weight 10 --expected-version 1
+```
+
+Use the actual current version from `history`; a stale expected version is rejected. New requests use the committed version immediately; in-flight calls keep their previous snapshot. Candidate errors are returned as serving errors without fallback.
+
+For shadow sampling, use `--mode shadow --shadow-sample-rate 10` with the same release references and current expected version. M3 records sampling decisions and serves stable; candidate shadow execution starts in M4.
+
+To register a real release, save a JSON definition such as `{"name":"groq-small-v1","provider":"groq","model":"openai/gpt-oss-20b","supports_temperature":false}` and run `uv run python -m scripts.configure_routing register path/to/release.json`. Then activate it as `--stable groq-small-v1 --mode stable`. Its provider key must already be configured; registration contains no credentials. Changing model/capability/default parameters requires a new release name.
 
 ## Roadmap and limits
 

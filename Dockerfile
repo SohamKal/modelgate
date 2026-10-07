@@ -10,8 +10,11 @@ RUN pip install --no-cache-dir uv==0.10.0
 COPY pyproject.toml uv.lock README.md ./
 COPY app ./app
 COPY worker ./worker
+COPY scripts ./scripts
+COPY migrations ./migrations
+COPY alembic.ini ./
 RUN uv sync --locked --no-dev --no-cache
 
 USER 10001:10001
 EXPOSE 8000
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--no-access-log"]
+CMD ["python", "-m", "scripts.start_gateway"]

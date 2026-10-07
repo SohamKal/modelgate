@@ -1,6 +1,7 @@
 """Provider-neutral, text-only contracts for the stable gateway."""
 
 from typing import Literal
+from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -38,12 +39,15 @@ class ProviderResult(Contract):
 class ChatResponse(ProviderResult):
     request_id: str
     release_name: str
-    serving_role: Literal["stable"] = "stable"
+    serving_role: Literal["stable", "candidate"] = "stable"
     config_version: int | None = None
+    recording_status: Literal["recorded", "degraded", "not_applicable"] = "not_applicable"
 
 
 class Release(Contract):
-    name: Literal["fake", "openai-a", "openai-b", "groq-a", "groq-b"]
+    id: UUID | None = None
+    name: str = Field(min_length=1, max_length=64, pattern=r"^[a-zA-Z0-9_-]+$")
     provider: Literal["fake", "openai", "groq"]
     model: str = Field(min_length=1, max_length=128)
     supports_temperature: bool
+    default_temperature: float | None = Field(default=None, ge=0, le=2)

@@ -15,6 +15,8 @@ from app.core.boundary import RequestBoundaryMiddleware
 from app.core.errors import ProviderError, error_body
 from app.core.logging import configure_logging
 from app.core.settings import Settings
+from app.persistence.repositories import Repository
+from app.persistence.session import create_engine, sessions
 from app.providers.base import Provider
 from app.providers.fake import FakeProvider
 from app.providers.groq import GroqProvider
@@ -26,12 +28,23 @@ def create_app(
     *,
     transport: httpx.AsyncBaseTransport | None = None,
     provider: Provider | None = None,
+    ephemeral: bool = False,
 ) -> FastAPI:
     @asynccontextmanager
     async def lifespan(application: FastAPI) -> AsyncIterator[None]:
-        configuration = settings or Settings()  # type: ignore[call-arg]  # Loaded from environment.
+        # Normal serving ignores the legacy adapter-verification selector.
+        configuration = settings or Settings(stable_release="fake")  # type: ignore[call-arg]
         release = configuration.active_release()
         configure_logging()
+        engine = None
+        if not ephemeral:
+            if (
+                configuration.content_hash_key is None
+                or len(configuration.content_hash_key.get_secret_value()) < 16
+            ):
+                raise ValueError("MODELGATE_CONTENT_HASH_KEY must contain at least 16 characters.")
+            engine = create_engine(configuration)
+        application.state.repository = Repository(sessions(engine)) if engine is not None else None
         async with httpx.AsyncClient(
             timeout=httpx.Timeout(
                 configuration.serving_deadline_seconds,
@@ -45,6 +58,20 @@ def create_app(
             application.state.settings = configuration
             application.state.release = release
             application.state.http_client = client
+            registry: dict[str, Provider] = {"fake": FakeProvider()}
+            if configuration.groq_api_key and configuration.groq_api_key.get_secret_value().strip():
+                registry["groq"] = GroqProvider(
+                    client, configuration.groq_api_key.get_secret_value()
+                )
+            if (
+                configuration.openai_api_key
+                and configuration.openai_api_key.get_secret_value().strip()
+            ):
+                registry["openai"] = OpenAIProvider(
+                    client, configuration.openai_api_key.get_secret_value()
+                )
+            application.state.providers = registry
+            application.state.provider_override = provider
             if provider is not None:
                 application.state.provider = provider
             elif release.provider == "fake":
@@ -68,6 +95,8 @@ def create_app(
                 yield
             finally:
                 application.state.ready = False
+                if engine is not None:
+                    await engine.dispose()
 
     application = FastAPI(title="Modelgate", version="0.1.0", lifespan=lifespan)
     application.add_middleware(RequestBoundaryMiddleware, state=application.state)
@@ -89,6 +118,17 @@ def create_app(
     @application.get("/health/ready")
     async def readiness() -> JSONResponse:
         ready = getattr(application.state, "ready", False)
+        repository = getattr(application.state, "repository", None)
+        if ready and repository is not None:
+            try:
+                async with asyncio.timeout(application.state.settings.database_deadline_seconds):
+                    snapshot = await repository.resolve()
+                    releases = [snapshot.stable]
+                    if snapshot.candidate is not None:
+                        releases.append(snapshot.candidate)
+                    ready = all(r.provider in application.state.providers for r in releases)
+            except Exception:
+                ready = False
         return JSONResponse(
             {"status": "ready" if ready else "not_ready"}, status_code=200 if ready else 503
         )

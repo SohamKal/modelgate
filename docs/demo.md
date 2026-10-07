@@ -1,3 +1,5 @@
 # Demo outline
 
 The seven-minute target sequence is in [the project plan](project-plan.md), section 25. The M2 demo can run the offline smoke command, send an authenticated stable request, inspect its request ID and release metadata, and change the server's active release without changing the client. The explicit trace and two-model live checks are described in [the M2 checklist](m2-plan.md). The full release workflow demo follows the later implementation milestones.
+
+For M3, migrate and seed an empty local database, send one authenticated fake request, and inspect its configuration version and correlated metadata. Use the local configuration CLI to activate a 10% canary with the current expected version. Demonstrate stable/candidate roles and immutable history. Finally activate shadow sampling and show deferred selection records with stable responses and no candidate execution. The repeatable test-database rehearsal is `python -m scripts.verify_routing`; setup and commands are in [operations](operations.md), and the saved results are in [M3 evidence](routing/m3-evidence.json).

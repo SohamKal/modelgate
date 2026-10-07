@@ -1,0 +1,15 @@
+{
+  "gate": "M3-container",
+  "status": "verified",
+  "verified_at": "2026-10-07T21:45:27.784226+00:00",
+  "readiness_status": 200,
+  "http_status": 200,
+  "request_id": "b27dfad4-f0cc-4c1b-a289-fa2d6b2f1fe9",
+  "release_name": "fake-stable",
+  "model": "fake-stable-v1",
+  "serving_role": "stable",
+  "config_version": 1,
+  "recording_status": "recorded",
+  "database_join_verified": true,
+  "real_provider_calls": 0
+}

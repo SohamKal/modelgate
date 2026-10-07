@@ -67,7 +67,7 @@ async def verify(
     configurations = model_configurations(settings, provider)
     results: list[dict[str, object]] = []
     for configuration in configurations:
-        app = create_app(configuration, transport=transport)
+        app = create_app(configuration, transport=transport, ephemeral=True)
         async with (
             app.router.lifespan_context(app),
             httpx.AsyncClient(

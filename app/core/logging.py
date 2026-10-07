@@ -5,7 +5,15 @@ import logging
 import sys
 from datetime import UTC, datetime
 
-SAFE_FIELDS = ("request_id", "status_code", "duration_ms", "release_name", "serving_role")
+SAFE_FIELDS = (
+    "request_id",
+    "status_code",
+    "duration_ms",
+    "release_name",
+    "serving_role",
+    "config_version",
+    "recording_status",
+)
 
 
 class SafeJsonFormatter(logging.Formatter):
@@ -14,7 +22,9 @@ class SafeJsonFormatter(logging.Formatter):
             "timestamp": datetime.now(UTC).isoformat(),
             "level": record.levelname,
             "service": "modelgate",
-            "event": "request_complete",
+            "event": record.msg
+            if record.msg in {"request_complete", "recording_degraded"}
+            else "request_complete",
         }
         for field in SAFE_FIELDS:
             if hasattr(record, field):

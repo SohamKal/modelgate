@@ -42,6 +42,10 @@ class Settings(BaseSettings):
     max_output_tokens: int = Field(default=1024, ge=200, le=4096)
     serving_deadline_seconds: float = Field(default=10, gt=0, le=60)
     serving_concurrency: int = Field(default=20, ge=1, le=128)
+    database_url: SecretStr | None = Field(default=None, validation_alias="DATABASE_URL")
+    content_hash_key: SecretStr | None = None
+    database_deadline_seconds: float = Field(default=1, gt=0, le=10)
+    shadow_payload_bytes: int = Field(default=131072, ge=1024, le=262144)
     openai_api_key: SecretStr | None = Field(default=None, validation_alias="OPENAI_API_KEY")
     openai_model_a: str | None = Field(default=None, validation_alias="OPENAI_MODEL_A")
     openai_model_b: str | None = Field(default=None, validation_alias="OPENAI_MODEL_B")
@@ -72,6 +76,18 @@ class Settings(BaseSettings):
 
     @model_validator(mode="after")
     def require_provider_configuration(self) -> Self:
+        if self.content_hash_key is not None:
+            raw_hash_key = self.content_hash_key.get_secret_value()
+            if len(raw_hash_key) < 16 or raw_hash_key.strip() != raw_hash_key:
+                raise ValueError(
+                    "Content hash key must contain at least 16 characters without padding."
+                )
+            if any(
+                raw_hash_key == key.get_secret_value()
+                for key in (self.client_api_key, self.openai_api_key, self.groq_api_key)
+                if key
+            ):
+                raise ValueError("Content hashing and API credentials must be different.")
         for key in (self.openai_api_key, self.groq_api_key):
             if key and key.get_secret_value() == self.client_api_key.get_secret_value():
                 raise ValueError("Gateway and provider credentials must be different.")
