@@ -16,6 +16,7 @@ ErrorCode = Literal[
     "provider_request_rejected",
     "invalid_provider_response",
     "internal_error",
+    "configuration_unavailable",
 ]
 
 ERRORS: dict[ErrorCode, tuple[int, str]] = {
@@ -30,6 +31,7 @@ ERRORS: dict[ErrorCode, tuple[int, str]] = {
     "provider_request_rejected": (502, "The provider rejected the configured request."),
     "invalid_provider_response": (502, "The provider returned an unsupported response."),
     "internal_error": (500, "The gateway could not complete the request."),
+    "configuration_unavailable": (503, "A usable routing configuration is unavailable."),
 }
 
 

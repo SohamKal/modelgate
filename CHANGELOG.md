@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+- Added M3 PostgreSQL migrations, immutable releases/configuration history, atomic activation audit, repeatable seed and local configuration CLI.
+- Added deterministic canary serving and independent shadow selection, durable configuration metadata and safe invocation records.
+- Preserved successful responses during recording failures; added bounded DB readiness/deadlines, pinned snapshots and PostgreSQL CI/fault tests.
+- Added routing rehearsal/evidence and Docker startup that migrates and seeds before serving. Shadow execution remains M4 work.
+
 - Added Groq Responses support and provider-selectable verification; both GPT-OSS model configurations passed the live gate on October 7, 2026.
 - Fixed normalization of provider reasoning-text items, which are discarded before assistant-content parsing. Groq requests omit its unsupported storage parameter.
 

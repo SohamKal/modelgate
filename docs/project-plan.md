@@ -2,6 +2,8 @@
 
 Implementation breakdown: [M2 subphase plan and completion gates](m2-plan.md), including [unfinished M1 technical spike evidence](spikes/m1-carryover.md).
 
+Next milestone breakdown: [M3 persistence and routing subphase plan](m3-plan.md), with ordered completion gates and revised estimates.
+
 **Project type:** Individual portfolio project  
 **Target level:** Level 3 strong portfolio and production-oriented design  
 **Deployment boundary:** Local and single-host Docker Compose only; no Kubernetes  

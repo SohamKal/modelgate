@@ -23,7 +23,7 @@ async def session(
     provider: Provider | None = None,
     transport: httpx.AsyncBaseTransport | None = None,
 ) -> AsyncIterator[tuple[FastAPI, httpx.AsyncClient]]:
-    app = create_app(settings, provider=provider, transport=transport)
+    app = create_app(settings, provider=provider, transport=transport, ephemeral=True)
     async with (
         app.router.lifespan_context(app),
         httpx.AsyncClient(

@@ -15,7 +15,7 @@ async def main() -> None:
     settings = Settings(_env_file=".env.example", stable_release="fake")  # type: ignore[call-arg]
     server = uvicorn.Server(
         uvicorn.Config(
-            create_app(settings),
+            create_app(settings, ephemeral=True),
             host="127.0.0.1",
             port=0,
             access_log=False,

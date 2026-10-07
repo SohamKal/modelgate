@@ -85,5 +85,7 @@ class RequestBoundaryMiddleware:
                     "duration_ms": round((time.perf_counter() - start) * 1000, 3),
                     "release_name": scope["state"].get("release_name"),
                     "serving_role": scope["state"].get("serving_role"),
+                    "config_version": scope["state"].get("config_version"),
+                    "recording_status": scope["state"].get("recording_status"),
                 },
             )
