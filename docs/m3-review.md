@@ -12,7 +12,7 @@ Review evidence below comes from code inspection, offline provider tests, real P
 | M3.5 | Why a canary failure reaches the client | Candidate is the chosen serving release. No stable fallback or second attempt exists. Pinned-snapshot tests activate a new version mid-call and verify the original call's metadata stays unchanged. |
 | M3.6 | Why selected shadow work is not a completed comparison | Selection is explicitly execution-deferred; actual HTTP results show no candidate serving in shadow modes. Payload serialization prevents input mutation and enforces a size bound. M4 still needs queue/consumers/outcome accounting. |
 | M3.7 | What the failure tests prove | Real PostgreSQL insert rejection, division-error read faults, stalled queries, transaction rollback, cancellation and metadata repair. Synthetic HTTP fixtures cover both real adapter registries without external calls. CI requires PostgreSQL. |
-| M3.8 | What remains to close the milestone | Documentation, fake HTTP evidence and container startup supplied. Verify pushed-commit CI and author review before closing the milestone. |
+| M3.8 | What remains to close the milestone | Documentation, fake HTTP evidence and container startup supplied; implementation committed locally as `caa5a23`. The author chose to defer publication/remote CI. Author sign-off remains pending. |
 
 ## Known limits
 

@@ -1,7 +1,8 @@
 # M3: Persistence and routing
 
 **Planning date:** October 7, 2026  
-**Status:** Implemented and locally verified; remote CI and author sign-off pending  
+**Status:** Implemented and locally verified; publication/remote CI deferred by the author, sign-off pending
+
 **Predecessor:** M2 stable gateway and provider contracts  
 **Project-plan mapping:** WBS 3.1–3.5; milestone “M3 Routing complete”
 
@@ -169,7 +170,8 @@ Evidence should identify the revision, database migration, tested versions, fake
 - [x] Database outage/recording failures meet the documented response behavior.
 - [x] Persistent metadata/logs contain no raw content or credentials.
 - [ ] Clean-database walkthrough, evidence, documentation and author review complete.
-- [ ] Implementation committed/pushed and required CI succeeds.
+- [x] Implementation committed locally as `caa5a23` on `codex/m3-persistence-routing`.
+- [ ] Branch published and required remote CI succeeds; deferred at the author's request.
 
 ## Template for each individual subphase plan
 
@@ -182,6 +184,8 @@ Evidence should identify the revision, database migration, tested versions, fake
 7. Estimate, actual observations and handoff to the next subphase.
 
 Implementation covers M3.0–M3.8. The review questions and failure explanations are recorded in [M3 review notes](m3-review.md); author sign-off and remote CI remain final gates.
+
+The author requested keeping the implementation local on October 7, 2026. No M3 branch or pull request was published, and remote CI has not run. The local gateway/PostgreSQL containers are healthy; the disposable verification container was stopped after testing.
 
 ## Implementation evidence — October 7, 2026
 
