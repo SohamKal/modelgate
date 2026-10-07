@@ -1,0 +1,17 @@
+{
+  "id": "resp_synthetic_fixture",
+  "model": "synthetic-model-a",
+  "status": "completed",
+  "output": [
+    {"type": "reasoning", "summary": []},
+    {"type": "message", "role": "assistant", "content": [
+      {"type": "output_text", "text": "Synthetic answer.", "annotations": []}
+    ]}
+  ],
+  "usage": {
+    "input_tokens": 12,
+    "output_tokens": 8,
+    "total_tokens": 20,
+    "output_tokens_details": {"reasoning_tokens": 4}
+  }
+}

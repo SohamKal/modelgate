@@ -1,0 +1,38 @@
+{
+  "gate": "M2.6-live",
+  "provider": "groq",
+  "status": "verified",
+  "verified_at": "2026-10-07T21:09:50.263706+00:00",
+  "results": [
+    {
+      "release": "groq-a",
+      "provider": "groq",
+      "model": "openai/gpt-oss-20b",
+      "requested_model": "openai/gpt-oss-20b",
+      "request_id": "4ab8ce7b-43f4-4f6b-bd70-cd2821cf9c4d",
+      "status": "verified",
+      "finish_reason": "stop",
+      "usage": {
+        "input_tokens": 77,
+        "output_tokens": 17,
+        "total_tokens": 94
+      },
+      "serving_role": "stable"
+    },
+    {
+      "release": "groq-b",
+      "provider": "groq",
+      "model": "openai/gpt-oss-120b",
+      "requested_model": "openai/gpt-oss-120b",
+      "request_id": "e4925ce6-5eb5-4ad9-b8e4-a39c0d385d56",
+      "status": "verified",
+      "finish_reason": "stop",
+      "usage": {
+        "input_tokens": 77,
+        "output_tokens": 19,
+        "total_tokens": 96
+      },
+      "serving_role": "stable"
+    }
+  ]
+}

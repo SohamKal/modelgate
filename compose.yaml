@@ -2,6 +2,23 @@ services:
   gateway:
     build: .
     environment:
+      MODELGATE_CLIENT_API_KEY: ${MODELGATE_CLIENT_API_KEY:?Copy .env.example to .env and configure a gateway key}
+      MODELGATE_STABLE_RELEASE: ${MODELGATE_STABLE_RELEASE:-fake}
+      MODELGATE_VERIFICATION_PROVIDER: ${MODELGATE_VERIFICATION_PROVIDER:-groq}
+      MODELGATE_MAX_REQUEST_BYTES: ${MODELGATE_MAX_REQUEST_BYTES:-65536}
+      MODELGATE_MAX_OUTPUT_TOKENS: ${MODELGATE_MAX_OUTPUT_TOKENS:-1024}
+      MODELGATE_SERVING_DEADLINE_SECONDS: ${MODELGATE_SERVING_DEADLINE_SECONDS:-10}
+      MODELGATE_SERVING_CONCURRENCY: ${MODELGATE_SERVING_CONCURRENCY:-20}
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      OPENAI_MODEL_A: ${OPENAI_MODEL_A:-}
+      OPENAI_MODEL_B: ${OPENAI_MODEL_B:-}
+      MODELGATE_OPENAI_A_SUPPORTS_TEMPERATURE: ${MODELGATE_OPENAI_A_SUPPORTS_TEMPERATURE:-false}
+      MODELGATE_OPENAI_B_SUPPORTS_TEMPERATURE: ${MODELGATE_OPENAI_B_SUPPORTS_TEMPERATURE:-false}
+      GROQ_API_KEY: ${GROQ_API_KEY:-}
+      GROQ_MODEL_A: ${GROQ_MODEL_A:-openai/gpt-oss-20b}
+      GROQ_MODEL_B: ${GROQ_MODEL_B:-openai/gpt-oss-120b}
+      MODELGATE_GROQ_A_SUPPORTS_TEMPERATURE: ${MODELGATE_GROQ_A_SUPPORTS_TEMPERATURE:-false}
+      MODELGATE_GROQ_B_SUPPORTS_TEMPERATURE: ${MODELGATE_GROQ_B_SUPPORTS_TEMPERATURE:-false}
       DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER:-modelgate}:${POSTGRES_PASSWORD:-local-dev-only}@postgres:5432/${POSTGRES_DB:-modelgate}
       OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4317
     ports:
@@ -23,7 +40,7 @@ services:
       POSTGRES_USER: ${POSTGRES_USER:-modelgate}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-local-dev-only}
     ports:
-      - "127.0.0.1:5432:5432"
+      - "127.0.0.1:${MODELGATE_POSTGRES_PORT:-55432}:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
@@ -58,6 +75,8 @@ services:
   otel-collector:
     image: otel/opentelemetry-collector-contrib:0.111.0
     profiles: [observability]
+    ports:
+      - "127.0.0.1:4317:4317"
     command: ["--config=/etc/otelcol/config.yaml"]
     volumes:
       - ./observability/otel-collector/config.yaml:/etc/otelcol/config.yaml:ro
